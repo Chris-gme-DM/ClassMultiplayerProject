@@ -1,33 +1,29 @@
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 public class PlayerMovement : NetworkBehaviour
 {
-    // InputActions
-    private InputActionReference moveAction;
-    private InputAction _moveAction;
-
     readonly public SyncVar<float> syncSpeed = new SyncVar<float>();
     public float speed = 5f;
-    private Vector3 _input;
+    private Vector2 _moveInput;
+    private Rigidbody _rigidbody;
+    private CinemachineCamera _cinemachineCamera;
     // Server-side Limits
     [Header("ServerLimits")]
     [Tooltip("Clamps PlayerMovement in m/s")]
     [SerializeField] private const float maxSpeed = 10f;
 
+    private void Awake()
+    {
+        _rigidbody = GetComponent<Rigidbody>();
+        _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+    }
     private void Start()
     {
         syncSpeed.OnChange += OnSpeedChange;
-        if(moveAction != null)
-        {
-            _moveAction = moveAction.action;
-        }
-        if(_moveAction != null && !_moveAction.enabled)
-        {
-            _moveAction.Enable();
-        }
     }
 
     void Update()
@@ -36,7 +32,7 @@ public class PlayerMovement : NetworkBehaviour
         if (!IsOwner)
             return;
 
-        _input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        _moveInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
         if (Input.GetKey(KeyCode.M))
         {
@@ -44,7 +40,7 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         // Input an Server senden
-        MoveServer(_input);
+        MoveServer(_moveInput);
     }
 
     [ServerRpc]
