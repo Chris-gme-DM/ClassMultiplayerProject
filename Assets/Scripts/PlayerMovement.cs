@@ -1,5 +1,6 @@
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
+using FishNet.Object.Prediction;
 using FishNet.Transporting;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -8,18 +9,22 @@ public class PlayerMovement : NetworkBehaviour
 {
     readonly public SyncVar<float> syncSpeed = new SyncVar<float>();
     public float speed = 5f;
-    private Vector2 _moveInput;
+    private Vector3 _moveInput;
+    private Vector3 _lookInput;
     private Rigidbody _rigidbody;
     private CinemachineCamera _cinemachineCamera;
-    // Server-side Limits
-    [Header("ServerLimits")]
-    [Tooltip("Clamps PlayerMovement in m/s")]
-    [SerializeField] private const float maxSpeed = 10f;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+    }
+    public override void OnStartNetwork()
+    {
+        base.OnStartNetwork();
+        if (!base.Owner.IsLocalClient) return;
+        
+        _cinemachineCamera.Follow = this.transform;
     }
     private void Start()
     {
@@ -31,8 +36,7 @@ public class PlayerMovement : NetworkBehaviour
         // Nur lokaler Client liest Input
         if (!IsOwner)
             return;
-
-        _moveInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        //        _moveInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
         if (Input.GetKey(KeyCode.M))
         {
@@ -40,16 +44,26 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         // Input an Server senden
-        MoveServer(_moveInput);
     }
 
-    [ServerRpc]
-    private void MoveServer(Vector3 input)
+    private void FixedUpdate()
     {
-        // Bewegung nur auf dem Server berechnen (authoritative)
-        Vector3 movement = input.normalized * speed * Time.deltaTime;
-        transform.position += movement;
+        // Bewegung mit Rigidbody
+        if (!IsOwner ) return;
+        Vector3 forwardMovement = transform.forward * _moveInput.y;
+        Vector3 rightMovement = transform.right * _moveInput.x;
+        Vector3 direction = (forwardMovement + rightMovement).normalized;
+        Vector3 targetVelocity = direction * speed;
+        _rigidbody.linearVelocity = new Vector3(targetVelocity.x, _rigidbody.linearVelocity.y, targetVelocity.z);
     }
+
+//   [ServerRpc]
+//   private void MoveServer(Vector3 input)
+//   {
+//       // Bewegung nur auf dem Server berechnen (authoritative)
+//       Vector3 movement = input.normalized * speed * Time.deltaTime;
+//       transform.position += movement;
+//   }
 
     [ServerRpc]
     private void ChangeSpeed()
@@ -60,5 +74,15 @@ public class PlayerMovement : NetworkBehaviour
     public void OnSpeedChange(float prev, float next, bool asServer)
     {
         speed = syncSpeed.Value;
+    }
+    public void OnMove(InputValue value)
+    {
+        if (!IsOwner) return;
+        _moveInput = value.Get<Vector2>();
+    }
+    public void OnLook(InputValue value)
+    {
+        if (!IsOwner) return;
+        _lookInput = value.Get<Vector2>();
     }
 }
