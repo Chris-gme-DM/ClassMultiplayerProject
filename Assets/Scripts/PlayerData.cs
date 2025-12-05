@@ -131,16 +131,12 @@ public class PlayerData : NetworkBehaviour
     {
         // Handle player death (e.g., respawn, notify others)
         Debug.Log($"{PlayerName} has died.");
-        // Disable player until Respawn
-        GetComponent<PlayerMovementWithHooks>().enabled = false;
         // Reset health
         _HP.Value = 100;
         // Respawn player at randomw spawn point
         PlayerSpawner spawner = NetworkManager.GetComponent<PlayerSpawner>();
         Transform spawnPoint = spawner.Spawns[Random.Range(0, spawner.Spawns.Length)];
         transform.position = spawnPoint.position;
-        // Reenable player
-        GetComponent<PlayerMovementWithHooks>().enabled = true;
     }
     public override void OnStopServer()
     {

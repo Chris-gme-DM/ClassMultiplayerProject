@@ -5,6 +5,7 @@ using FishNet.Transporting;
 using FishNet.Connection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using FishNet.Object.Prediction;
 
 public class PlayerMovementWithHooks : NetworkBehaviour
 {
@@ -55,7 +56,6 @@ public class PlayerMovementWithHooks : NetworkBehaviour
     {
         transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         _playerHead.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
-        Debug.Log($"Applied Look - Pitch: {pitch}, Yaw: {yaw}");
     }
     [ServerRpc]
     private void SendLook(float pitch, float yaw)
@@ -108,10 +108,10 @@ public class PlayerMovementWithHooks : NetworkBehaviour
         float delta = (float)TimeManager.TickDelta;
 
         // Calculate movement on the server only (server-authoritative)
-        Vector3 movement = (transform.forward * input.z + transform.right * input.x).normalized * syncSpeed.Value * delta;
-
-        // Apply movement to server-side position
-        transform.localPosition += movement;
+        Vector3 movement = (transform.forward * input.z + transform.right * input.x).normalized * syncSpeed.Value;
+        // Apply movement to server-side position, its a rigidbody
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.MovePosition(rb.position + movement * delta);
 
         // Create callback message
         string callbackText = $"Moved by: {movement}";
