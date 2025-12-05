@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 8867420179699820952}
   - component: {fileID: 1134754577584124811}
   - component: {fileID: 8671384455088307833}
-  - component: {fileID: 458681106559336400}
+  - component: {fileID: 4201604140850031125}
   m_Layer: 9
   m_Name: PlayerPrefab
   m_TagString: Player
@@ -151,7 +151,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
-  _initializedTimestamp: -8584366668812379635
+  _initializedTimestamp: -8584366572714606658
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 0
@@ -197,8 +197,8 @@ MonoBehaviour:
     Rotation: 1
     Scale: 0
   _useScaledTime: 1
-  _interpolation: 1
-  _extrapolation: 1
+  _interpolation: 2
+  _extrapolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
   _clientAuthoritative: 1
@@ -282,7 +282,7 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!54 &458681106559336400
+--- !u!54 &4201604140850031125
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

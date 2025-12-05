@@ -1,11 +1,9 @@
 ﻿using FishNet.Managing.Timing;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
-using FishNet.Transporting;
 using FishNet.Connection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using FishNet.Object.Prediction;
 
 public class PlayerMovementWithHooks : NetworkBehaviour
 {
@@ -109,9 +107,8 @@ public class PlayerMovementWithHooks : NetworkBehaviour
 
         // Calculate movement on the server only (server-authoritative)
         Vector3 movement = (transform.forward * input.z + transform.right * input.x).normalized * syncSpeed.Value;
-        // Apply movement to server-side position, its a rigidbody
-        Rigidbody rb = GetComponent<Rigidbody>();
-        rb.MovePosition(rb.position + movement * delta);
+        // Apply movement to server-side position
+        transform.position += movement * delta;
 
         // Create callback message
         string callbackText = $"Moved by: {movement}";
